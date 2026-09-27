@@ -141,6 +141,45 @@
   .mode-toggle button.active { background: var(--moss); color: #fff; }
   .mode-toggle button:first-child { border-right: 1px solid var(--line); }
 
+  .unit-toggle {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .unit-toggle button {
+    padding: 5px 12px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--bg);
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .unit-toggle button.active { background: var(--berry); color: #fff; border-color: var(--berry); }
+
+  .craft-toggle {
+    display: flex;
+    gap: 6px;
+  }
+  .craft-toggle button {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .craft-toggle button.active { background: var(--moss); color: #fff; border-color: var(--moss); }
+
   .field { margin-bottom: 16px; }
   .field-row { display: flex; gap: 12px; }
   .field-row .field { flex: 1; }
@@ -280,6 +319,11 @@
   </div>
 
   <div class="calc-card">
+    <div class="unit-toggle">
+      <button id="unit-metric" class="active">Metric (cm / m)</button>
+      <button id="unit-imperial">Imperial (in / yd)</button>
+    </div>
+
     <div class="mode-toggle">
       <button id="mode-need" class="active">I need yarn for a project</button>
       <button id="mode-have">I have yarn — what can I make?</button>
@@ -299,28 +343,57 @@
     </div>
 
     <div class="field">
-      <label for="stitch">Stitch pattern</label>
-      <select id="stitch">
+      <label>Craft</label>
+      <div class="craft-toggle">
+        <button type="button" id="craft-knit" class="active">Knitting</button>
+        <button type="button" id="craft-crochet">Crochet</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="stitch-knit" id="stitch-label">Stitch pattern</label>
+      <select id="stitch-knit">
         <option value="1.0">Stockinette / plain</option>
         <option value="1.05">Garter</option>
         <option value="1.10">Seed / moss stitch</option>
         <option value="1.20">Cables / heavily textured</option>
       </select>
+      <select id="stitch-crochet" class="hidden">
+        <option value="1.25">Double crochet (dc)</option>
+        <option value="1.5">Single crochet (sc)</option>
+        <option value="1.35">Half double crochet (hdc)</option>
+        <option value="1.15">Treble / triple crochet (tr)</option>
+        <option value="1.3">Granny stitch / clusters</option>
+      </select>
+      <div class="hint">Crochet stitches generally use more yarn per square inch than knit stitches of the same yarn weight — this is already factored in</div>
+    </div>
+
+    <div class="field">
+      <label for="tension">Your tension</label>
+      <select id="tension">
+        <option value="0.85">Generally loose</option>
+        <option value="1.0" selected>Average</option>
+        <option value="1.15">Generally tight</option>
+      </select>
+      <div class="hint">If you know you knit/crochet tighter or looser than average, this nudges the estimate for you — no swatching required</div>
     </div>
 
     <details class="advanced">
-      <summary>I know my exact gauge (more accurate)</summary>
-      <div class="hint" style="margin-top:10px;">Knit a small test square with your actual yarn and needles, then fill in:</div>
+      <summary>Find my exact measurements (more accurate)</summary>
+      <div class="hint" style="margin-top:10px;" id="swatch-instructions">Measure out 10m of your yarn, then knit or crochet a swatch using that yarn until you run out. Measure the swatch you end up with and fill in:</div>
+      <div class="field">
+        <label for="swatch-yards" id="swatch-yards-label">Yarn you measured out (m)</label>
+        <input type="number" id="swatch-yards" placeholder="10" value="10" min="0" step="0.1">
+      </div>
       <div class="field field-row">
         <div class="field">
-          <label for="swatch-yards">Yarn used in that square (yd)</label>
-          <input type="number" id="swatch-yards" placeholder="e.g. 20" min="0" step="0.1">
-          <div class="hint">Unravel and measure it, or weigh it against the label's yards-per-gram</div>
+          <label for="swatch-width" id="swatch-width-label">Width of that swatch (cm)</label>
+          <input type="number" id="swatch-width" placeholder="e.g. 12" min="0" step="0.5">
         </div>
         <div class="field">
-          <label for="swatch-size">Size of that square (in²)</label>
-          <input type="number" id="swatch-size" placeholder="16" value="16" min="1" step="0.5">
-          <div class="hint">A standard 4"×4" swatch = 16 in²</div>
+          <label for="swatch-height" id="swatch-height-label">Length of that swatch (cm)</label>
+          <input type="number" id="swatch-height" placeholder="e.g. 11" min="0" step="0.5">
+          <div class="hint" id="swatch-height-hint">If it's not a perfect rectangle, measure its average width and length</div>
         </div>
       </div>
     </details>
@@ -330,32 +403,32 @@
     <div id="need-inputs">
       <div class="field field-row">
         <div class="field">
-          <label for="width">Finished width (in)</label>
-          <input type="number" id="width" placeholder="e.g. 8" min="0" step="0.5">
+          <label for="width" id="width-label">Finished width (cm)</label>
+          <input type="number" id="width" placeholder="e.g. 20" min="0" step="1">
           <div class="hint">How wide the finished scarf/blanket will be, edge to edge</div>
         </div>
         <div class="field">
-          <label for="length">Finished length (in)</label>
-          <input type="number" id="length" placeholder="e.g. 60" min="0" step="0.5">
+          <label for="length" id="length-label">Finished length (cm)</label>
+          <input type="number" id="length" placeholder="e.g. 150" min="0" step="1">
           <div class="hint">How long the finished piece will be, end to end</div>
         </div>
       </div>
       <div class="field">
-        <label for="skein-yards">Yards per skein (optional — for skein count)</label>
-        <input type="number" id="skein-yards" placeholder="e.g. 220" min="0" step="1">
-        <div class="hint">Check the label on the yarn you plan to buy — this just converts yardage into "buy X skeins"</div>
+        <label for="skein-yards" id="skein-yards-label">Meters per skein (optional — for skein count)</label>
+        <input type="number" id="skein-yards" placeholder="e.g. 200" min="0" step="1">
+        <div class="hint" id="skein-yards-hint">Check the label on the yarn you plan to buy — this just converts yardage into "buy X skeins"</div>
       </div>
     </div>
 
     <div id="have-inputs" class="hidden">
       <div class="field">
-        <label for="have-yards">Yarn you have (total yards)</label>
-        <input type="number" id="have-yards" placeholder="e.g. 500" min="0" step="1">
-        <div class="hint">Total yardage across all skeins — check the label, or add up multiple skeins</div>
+        <label for="have-yards" id="have-yards-label">Yarn you have (total meters)</label>
+        <input type="number" id="have-yards" placeholder="e.g. 450" min="0" step="1">
+        <div class="hint" id="have-yards-hint">Total length across all skeins — check the label, or add up multiple skeins</div>
       </div>
       <div class="field">
-        <label for="have-width">Width you want to knit/crochet at (in)</label>
-        <input type="number" id="have-width" placeholder="e.g. 8" min="0" step="0.5">
+        <label for="have-width" id="have-width-label">Width you want to knit/crochet at (cm)</label>
+        <input type="number" id="have-width" placeholder="e.g. 20" min="0" step="1">
         <div class="hint">How wide you plan to make it — the calculator works out how long it can be before you run out</div>
       </div>
     </div>
@@ -367,7 +440,7 @@
     </div>
 
     <div class="note" id="note">
-      Estimate based on typical yarn weight averages, for rectangular pieces (scarves, blankets, cowls) only. For best accuracy, knit a gauge swatch and use "I know my exact gauge" above. A 10% safety buffer is already included in the yardage figure.
+      Estimate based on typical yarn weight averages, adjusted by your selected tension, for rectangular pieces (scarves, blankets, cowls) only. For the most accurate result, use "Find my exact measurements" above — this overrides both the weight default and the tension setting with your real numbers. A 10% safety buffer is already included in the yardage figure.
     </div>
   </div>
 
@@ -387,8 +460,8 @@
   <!-- SEO / EXPLAINER CONTENT -->
   <div class="explainer">
     <h2>How much yarn do I need for a blanket or scarf?</h2>
-    <p>The amount of yarn a project takes depends on three things: the size of the finished piece, how thick the yarn is, and how dense the stitch pattern is. A cabled blanket in bulky yarn uses far more yardage than a plain stockinette scarf of the same size, because texture and thickness both add to how much yarn gets packed into each square inch.</p>
-    <p class="soft">This calculator uses typical yardage-per-square-inch figures for each standard yarn weight category, then adjusts for stitch pattern and adds a small safety buffer — so you're not caught short mid-project.</p>
+    <p>The amount of yarn a project takes depends on four things: the size of the finished piece, how thick the yarn is, how dense the stitch pattern is, and your personal tension. A cabled blanket in bulky yarn uses far more yardage than a plain stockinette scarf of the same size, because texture and thickness both add to how much yarn gets packed into each square inch. On top of that, two people using the exact same pattern, yarn, and needle or hook size can still end up using noticeably different amounts of yarn simply because one knits or crochets tighter or looser than the other.</p>
+    <p class="soft">This calculator uses typical yardage-per-square-inch figures for each standard yarn weight category, then adjusts for stitch pattern and your selected tension, and adds a small safety buffer — so you're not caught short mid-project. For the most precise result, the "Find my exact measurements" option accounts for your tension directly, rather than relying on an average.</p>
 
     <h2>What if I already have yarn and don't know what to make?</h2>
     <p>Switch to "I have yarn" mode above, enter your total yardage and the width you'd like to work at, and the calculator works backwards to tell you the maximum length you can make — handy for using up leftover skeins or stash yarn without guessing.</p>
@@ -403,9 +476,15 @@
 <script>
   const el = id => document.getElementById(id);
   const weightSel = el('weight');
-  const stitchSel = el('stitch');
+  const stitchKnitSel = el('stitch-knit');
+  const stitchCrochetSel = el('stitch-crochet');
+  const craftKnitBtn = el('craft-knit');
+  const craftCrochetBtn = el('craft-crochet');
+  let craft = 'knit';
+  const tensionSel = el('tension');
   const swatchYards = el('swatch-yards');
-  const swatchSize = el('swatch-size');
+  const swatchWidth = el('swatch-width');
+  const swatchHeight = el('swatch-height');
 
   const modeNeedBtn = el('mode-need');
   const modeHaveBtn = el('mode-have');
@@ -416,7 +495,95 @@
   const resultUnit = el('result-unit');
   const resultSub = el('result-sub');
 
+  const unitMetricBtn = el('unit-metric');
+  const unitImperialBtn = el('unit-imperial');
+
   let mode = 'need';
+  let unitSystem = 'metric'; // default, per site setting — 'metric' or 'imperial'
+
+  // ---- Unit conversion helpers ----
+  const CM_PER_IN = 2.54;
+  const SQCM_PER_SQIN = CM_PER_IN * CM_PER_IN;
+  const M_PER_YD = 0.9144;
+
+  function convertLength(value, from, to) {
+    if (from === to || isNaN(value)) return value;
+    return from === 'metric' ? value / CM_PER_IN : value * CM_PER_IN;
+  }
+  function convertYardage(value, from, to) {
+    if (from === to || isNaN(value)) return value;
+    return from === 'metric' ? value / M_PER_YD : value * M_PER_YD;
+  }
+  function convertArea(value, from, to) {
+    if (from === to || isNaN(value)) return value;
+    return from === 'metric' ? value / SQCM_PER_SQIN : value * SQCM_PER_SQIN;
+  }
+  function round1(v) { return Math.round(v * 10) / 10; }
+
+  function updateUnitLabels() {
+    const m = unitSystem === 'metric';
+    unitMetricBtn.classList.toggle('active', m);
+    unitImperialBtn.classList.toggle('active', !m);
+
+    el('width-label').textContent = m ? 'Finished width (cm)' : 'Finished width (in)';
+    el('width').placeholder = m ? 'e.g. 20' : 'e.g. 8';
+
+    el('length-label').textContent = m ? 'Finished length (cm)' : 'Finished length (in)';
+    el('length').placeholder = m ? 'e.g. 150' : 'e.g. 60';
+
+    el('skein-yards-label').textContent = m ? 'Meters per skein (optional — for skein count)' : 'Yards per skein (optional — for skein count)';
+    el('skein-yards').placeholder = m ? 'e.g. 200' : 'e.g. 220';
+
+    el('swatch-instructions').textContent = m
+      ? 'Measure out 10m of your yarn, then knit or crochet a swatch using that yarn until you run out. Measure the swatch you end up with and fill in:'
+      : 'Measure out 10yd of your yarn, then knit or crochet a swatch using that yarn until you run out. Measure the swatch you end up with and fill in:';
+    el('swatch-yards-label').textContent = m ? 'Yarn you measured out (m)' : 'Yarn you measured out (yd)';
+
+    el('swatch-width-label').textContent = m ? 'Width of that swatch (cm)' : 'Width of that swatch (in)';
+    el('swatch-width').placeholder = m ? 'e.g. 12' : 'e.g. 5';
+    el('swatch-height-label').textContent = m ? 'Length of that swatch (cm)' : 'Length of that swatch (in)';
+    el('swatch-height').placeholder = m ? 'e.g. 11' : 'e.g. 4.5';
+
+    el('have-yards-label').textContent = m ? 'Yarn you have (total meters)' : 'Yarn you have (total yards)';
+    el('have-yards').placeholder = m ? 'e.g. 450' : 'e.g. 500';
+    el('have-yards-hint').textContent = m ? 'Total length across all skeins — check the label, or add up multiple skeins' : 'Total yardage across all skeins — check the label, or add up multiple skeins';
+
+    el('have-width-label').textContent = m ? 'Width you want to knit/crochet at (cm)' : 'Width you want to knit/crochet at (in)';
+    el('have-width').placeholder = m ? 'e.g. 20' : 'e.g. 8';
+  }
+
+  function switchUnits(newSystem) {
+    if (newSystem === unitSystem) return;
+    const old = unitSystem;
+
+    // Convert any values already entered so the real-world size is preserved
+    ['width', 'length', 'have-width', 'swatch-width', 'swatch-height'].forEach(id => {
+      const inp = el(id);
+      const v = parseFloat(inp.value);
+      if (!isNaN(v)) inp.value = round1(convertLength(v, old, newSystem));
+    });
+    ['skein-yards', 'have-yards'].forEach(id => {
+      const inp = el(id);
+      const v = parseFloat(inp.value);
+      if (!isNaN(v)) inp.value = Math.round(convertYardage(v, old, newSystem));
+    });
+    {
+      // The swatch-yards field is a round "measure this much out" suggestion —
+      // if it's still at the default, just reset to the new unit's round default
+      // rather than converting into an odd decimal.
+      const oldDefault = 10;
+      const v = parseFloat(swatchYards.value);
+      if (!isNaN(v)) {
+        swatchYards.value = Math.abs(v - oldDefault) < 0.001
+          ? 10
+          : round1(convertYardage(v, old, newSystem));
+      }
+    }
+
+    unitSystem = newSystem;
+    updateUnitLabels();
+    calculate();
+  }
 
   // ---- Affiliate links per yarn weight ----
   // Replace these href values with your real affiliate links (Amazon Associates, LoveCrafts, etc.)
@@ -451,70 +618,108 @@
   }
 
   function getYardsPerSqIn() {
-    const swatchY = parseFloat(swatchYards.value);
-    const swatchA = parseFloat(swatchSize.value);
-    if (swatchY > 0 && swatchA > 0) return swatchY / swatchA;
+    // Internally, all math stays in yards-per-square-inch regardless of the
+    // display unit — inputs are converted in, and results converted back out.
+    const swatchYDisplay = parseFloat(swatchYards.value);
+    const swatchWDisplay = parseFloat(swatchWidth.value);
+    const swatchHDisplay = parseFloat(swatchHeight.value);
+    if (swatchYDisplay > 0 && swatchWDisplay > 0 && swatchHDisplay > 0) {
+      const swatchYBase = convertYardage(swatchYDisplay, unitSystem, 'imperial');
+      const wBase = convertLength(swatchWDisplay, unitSystem, 'imperial');
+      const hBase = convertLength(swatchHDisplay, unitSystem, 'imperial');
+      const swatchABase = wBase * hBase;
+      // Using a known, fixed amount of yarn until it runs out means the
+      // resulting swatch size already reflects the person's actual tension,
+      // so this overrides the default entirely and skips the tension multiplier below.
+      return swatchYBase / swatchABase;
+    }
     const opt = weightSel.options[weightSel.selectedIndex];
-    return parseFloat(opt.dataset.ypsi);
+    const base = parseFloat(opt.dataset.ypsi);
+    const tensionMult = parseFloat(tensionSel.value);
+    return base * tensionMult;
   }
 
-  function getStitchMultiplier() { return parseFloat(stitchSel.value); }
+  function getStitchMultiplier() {
+    return craft === 'knit' ? parseFloat(stitchKnitSel.value) : parseFloat(stitchCrochetSel.value);
+  }
+
+  function switchCraft(newCraft) {
+    if (newCraft === craft) return;
+    craft = newCraft;
+    craftKnitBtn.classList.toggle('active', craft === 'knit');
+    craftCrochetBtn.classList.toggle('active', craft === 'crochet');
+    stitchKnitSel.classList.toggle('hidden', craft !== 'knit');
+    stitchCrochetSel.classList.toggle('hidden', craft !== 'crochet');
+    calculate();
+  }
 
   function fmt(n) { return n.toLocaleString(undefined, { maximumFractionDigits: 0 }); }
 
   function calculate() {
-    const ypsi = getYardsPerSqIn();
+    const ypsi = getYardsPerSqIn(); // yards per square inch, always
     const mult = getStitchMultiplier();
+    const m = unitSystem === 'metric';
+    const yardWord = m ? 'meters' : 'yards';
+    const lengthWord = m ? 'cm' : 'in';
+    const areaWord = m ? 'sq cm' : 'sq in';
 
     if (mode === 'need') {
-      const w = parseFloat(el('width').value);
-      const l = parseFloat(el('length').value);
-      if (!w || !l) {
+      const wDisplay = parseFloat(el('width').value);
+      const lDisplay = parseFloat(el('length').value);
+      if (!wDisplay || !lDisplay) {
         resultFigure.textContent = '—';
         resultUnit.textContent = 'enter your dimensions';
         resultSub.classList.add('hidden');
         resultBox.classList.remove('reverse');
         return;
       }
-      const area = w * l;
-      const rawYards = area * ypsi * mult;
-      const buffered = rawYards * 1.10;
+      const w = convertLength(wDisplay, unitSystem, 'imperial');
+      const l = convertLength(lDisplay, unitSystem, 'imperial');
+      const area = w * l; // sq inches
+      const rawYards = area * ypsi * mult; // yards
+      const buffered = rawYards * 1.10; // yards
+      const bufferedDisplay = convertYardage(buffered, 'imperial', unitSystem);
 
       resultBox.classList.remove('reverse');
-      resultFigure.textContent = fmt(buffered);
-      resultUnit.textContent = 'yards needed (incl. 10% buffer)';
+      resultFigure.textContent = fmt(bufferedDisplay);
+      resultUnit.textContent = `${yardWord} needed (incl. 10% buffer)`;
 
-      const skeinYards = parseFloat(el('skein-yards').value);
-      if (skeinYards > 0) {
-        const skeins = Math.ceil(buffered / skeinYards);
-        resultSub.textContent = `≈ ${skeins} skein${skeins === 1 ? '' : 's'} at ${fmt(skeinYards)} yd each`;
+      const skeinDisplay = parseFloat(el('skein-yards').value);
+      if (skeinDisplay > 0) {
+        const skeins = Math.ceil(bufferedDisplay / skeinDisplay);
+        const unitAbbr = m ? 'm' : 'yd';
+        resultSub.textContent = `≈ ${skeins} skein${skeins === 1 ? '' : 's'} at ${fmt(skeinDisplay)} ${unitAbbr} each`;
         resultSub.classList.remove('hidden');
       } else {
         resultSub.classList.add('hidden');
       }
     } else {
-      const haveYards = parseFloat(el('have-yards').value);
-      const width = parseFloat(el('have-width').value);
-      if (!haveYards) {
+      const haveDisplay = parseFloat(el('have-yards').value);
+      const widthDisplay = parseFloat(el('have-width').value);
+      if (!haveDisplay) {
         resultFigure.textContent = '—';
         resultUnit.textContent = 'enter how much yarn you have';
         resultSub.classList.add('hidden');
         resultBox.classList.add('reverse');
         return;
       }
+      const haveYards = convertYardage(haveDisplay, unitSystem, 'imperial');
       const usableYards = haveYards * 0.90;
-      const maxArea = usableYards / (ypsi * mult);
+      const maxArea = usableYards / (ypsi * mult); // sq inches
+      const maxAreaDisplay = convertArea(maxArea, 'imperial', unitSystem);
 
       resultBox.classList.add('reverse');
-      if (width > 0) {
-        const maxLength = maxArea / width;
-        resultFigure.textContent = fmt(maxLength);
-        resultUnit.textContent = `inches long, at ${width}" wide`;
-        resultSub.textContent = `≈ ${fmt(maxArea)} sq in total coverage`;
+      if (widthDisplay > 0) {
+        const width = convertLength(widthDisplay, unitSystem, 'imperial');
+        const maxLength = maxArea / width; // inches
+        const maxLengthDisplay = convertLength(maxLength, 'imperial', unitSystem);
+        resultFigure.textContent = fmt(maxLengthDisplay);
+        resultUnit.textContent = `${lengthWord} long, at ${fmt(widthDisplay)}${m ? 'cm' : '"'} wide`;
+        resultSub.textContent = `≈ ${fmt(maxAreaDisplay)} ${areaWord} total coverage`;
         resultSub.classList.remove('hidden');
       } else {
-        resultFigure.textContent = fmt(maxArea);
-        resultUnit.textContent = 'sq inches you can cover';
+        resultFigure.textContent = fmt(maxAreaDisplay);
+        resultUnit.textContent = `${areaWord} you can cover`;
         resultSub.classList.add('hidden');
       }
     }
@@ -538,10 +743,16 @@
     calculate();
   });
 
-  [weightSel, stitchSel, swatchYards, swatchSize].forEach(i => i.addEventListener('input', calculate));
+  unitMetricBtn.addEventListener('click', () => switchUnits('metric'));
+  unitImperialBtn.addEventListener('click', () => switchUnits('imperial'));
+  craftKnitBtn.addEventListener('click', () => switchCraft('knit'));
+  craftCrochetBtn.addEventListener('click', () => switchCraft('crochet'));
+
+  [weightSel, stitchKnitSel, stitchCrochetSel, tensionSel, swatchYards, swatchWidth, swatchHeight].forEach(i => i.addEventListener('input', calculate));
   weightSel.addEventListener('input', renderAffiliateLinks);
   document.querySelectorAll('#need-inputs input, #have-inputs input').forEach(i => i.addEventListener('input', calculate));
 
+  updateUnitLabels();
   calculate();
   renderAffiliateLinks();
 </script>
